@@ -22,7 +22,7 @@ Category: I (Interactive). Claude API: No. Home screen name: Crumble City.
    Fire: tap a building; fire spreads to neighbors, chars blocks, weakens supports, and burns them to ash.
    Tornado: tap to drop a funnel that lasts about 12 seconds; drag to steer it.
    Hurricane: tap to toggle the storm (it darkens the sky and brings rain); drag across the city to aim the wind.
-   Tsunami: tap near an edge and a wave rolls in from that side, then leaves water that recedes.
+   Tsunami: tap near an edge and a wave rolls in from that side, putting out every fire it passes in a puff of steam, then leaves water that recedes. Doused blocks stay too wet to catch fire again for about 10 seconds.
 6. The floating buttons at the top right are Pause (rendering and orbit keep running), Slow Motion (quarter speed), Reset View, Rebuild, and Photo.
 7. Photo saves the scene with a caption band and the date to a gallery on this device. The gallery button in the header shows thumbnails; open one to Share, Download, or Delete it.
 

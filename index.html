@@ -518,7 +518,7 @@ function newBlock(spec, pid){
   const id = idFree.length ? idFree.pop() : idHigh++;
   if (id >= MAXB) { freeSlot(k, slot); return -1; }
   st[id] = FROZEN; mk[id] = k; inst[id] = slot; pcOf[id] = pid; fl[id] = spec.flags || 0;
-  hp[id] = 1; burn[id] = 0; burnRate[id] = 0; slowT[id] = 0; inW[id] = 0; settle[id] = 0;
+  hp[id] = 1; burn[id] = 0; burnRate[id] = 0; slowT[id] = 0; inW[id] = 0; settle[id] = 0; wetUntil[id] = 0;
   hx[id] = spec.x; hy[id] = spec.y; hz[id] = spec.z;
   _q.setFromAxisAngle(_p.set(0, 1, 0), spec.ry || 0);
   hq[id * 4] = _q.x; hq[id * 4 + 1] = _q.y; hq[id * 4 + 2] = _q.z; hq[id * 4 + 3] = _q.w;
@@ -993,9 +993,10 @@ function blast(pt, R, power, opts){
 
 /* ---------- fire ---------- */
 const BURN_CAP = 170;
+const wetUntil = new Float32Array(MAXB); let simClock = 0;
 function ignite(id, power){
   if (st[id] !== FROZEN && st[id] !== ACTIVE) return false;
-  if (burning.size >= BURN_CAP || burn[id] >= 1) return false;
+  if (burning.size >= BURN_CAP || burn[id] >= 1 || wetUntil[id] > simClock) return false;
   if ((fl[id] & F_ROAD) && burn[id] >= 0.85) return false;
   burning.add(id); burnRate[id] = 0.07 + (power || 5) * 0.012;
   if (burn[id] < 0.04) burn[id] = 0.04;
@@ -1030,6 +1031,13 @@ function updateFire(dt){
   }
   crackleT -= dt;
   if (crackleT <= 0) { crackleT = rnd(0.04, 0.2) / Math.min(4, 1 + burning.size / 20); noiseHit(0.04, rnd(2000, 5000), 'highpass', Math.min(0.12, 0.02 + burning.size * 0.002)); }
+}
+
+function douse(id, v){
+  wetUntil[id] = simClock + 10;
+  if (!burning.delete(id)) return;
+  for (let i = 0; i < 6; i++) spawnP(v.x + rnd(-.5, .5), v.y + sy[id] * 0.4, v.z + rnd(-.5, .5), rnd(-.4, .4), rnd(1.2, 2.6), rnd(-.4, .4), rnd(1.2, 2.4), rnd(0.8, 1.5), 0.86, 0.88, 0.9, 0.7, 1);
+  if (Math.random() < 0.3) noiseHit(0.35, 3000, 'highpass', 0.08, 900);
 }
 
 /* ---------- picking ---------- */
@@ -1351,6 +1359,7 @@ const TOOLS = [
         water.t += dt;
         const k = water.t / water.dur;
         water.m.position.y = lerp(water.h, -0.2, k); water.m.material.opacity = 0.6 * (1 - k * 0.7);
+        if (burning.size) for (const id of Array.from(burning)) { posOf(id, tmpV); if (tmpV.y - sy[id] / 2 < water.m.position.y + 0.2) douse(id, tmpV); }
         for (const id of actives) { const b = bodies[id]; if (b.position.y < water.m.position.y) { b.velocity.y += 7 * dt; b.velocity.x *= 1 - dt * 0.8; b.velocity.z *= 1 - dt * 0.8; } }
         if (k >= 1) { disposeObj(water.m); water = null; }
       }
@@ -1363,6 +1372,11 @@ const TOOLS = [
       const lo = Math.min(W.pos - W.thick / 2, front), hi = Math.max(W.pos + W.thick / 2, front + W.sign * 0.6);
       for (let id = 0; id < idHigh; id++) {
         const s = st[id]; if (s !== FROZEN && s !== ACTIVE) continue;
+        if (burning.has(id)) {
+          posOf(id, tmpV);
+          const cb = W.ax === 'x' ? tmpV.x : tmpV.z;
+          if (cb >= lo && cb <= hi) douse(id, tmpV);
+        }
         if (fl[id] & F_ROAD) continue;
         posOf(id, tmpV);
         const c = W.ax === 'x' ? tmpV.x : tmpV.z;
@@ -1861,7 +1875,7 @@ function frame(now){
     }
     checkSupports();
     if (!paused) for (const t of TOOLS) t.update(sdt);
-    if (!paused) updateFire(sdt);
+    if (!paused) { simClock += sdt; updateFire(sdt); }
     syncActives();
     if (!paused) settleAndCull(sdt);
     updateParticles(sdt);
