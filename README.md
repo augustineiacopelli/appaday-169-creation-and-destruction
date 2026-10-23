@@ -26,7 +26,7 @@ Category: I (Interactive). Claude API: No. Home screen name: Crumble City.
 6. The floating buttons at the top right are Pause (rendering and orbit keep running), Slow Motion (quarter speed), Reset View, Rebuild, and Photo.
 7. Photo saves the scene with a caption band and the date to a gallery on this device. The gallery button in the header shows thumbnails; open one to Share, Download, or Delete it.
 
-The gear button holds Sound, Vibration, Shadows, and Quality (Low, Medium, High). Quality sets the pixel ratio, shadow map size, solver iterations, the cap on moving blocks, the block budget (2500, 3200, 4000), and the particle pool. The layout and settings are saved in this browser only (keys appaday169-layout and appaday169-settings), and photos are kept in IndexedDB (database appaday169, store photos).
+The gear button holds Sound, Vibration, Shadows, Weather, and Quality (Low, Medium, High). Weather sets the scene to Clear, Overcast, Rain, Sunset, or Night, and it changes the sky, fog, light, rain, and rain sound with a smooth fade. While a tornado or hurricane is running, the weather always shifts to storm overcast with rain, then fades back to your chosen scenario once the storm passes. Quality sets the pixel ratio, shadow map size, solver iterations, the cap on moving blocks, the block budget (2500, 3200, 4000), and the particle pool. The layout and settings are saved in this browser only (keys appaday169-layout and appaday169-settings), and photos are kept in IndexedDB (database appaday169, store photos).
 
 ## Tech
 
